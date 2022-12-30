@@ -3,6 +3,10 @@
 ## DESCRIPTION
 It parses ING credit card transactions summary PDF into a CSV, with aggregated total sum per contractor
 
+## REQUIREMENTS
+- Maven
+- JDK 11
+
 ## HOW TO USE
 Build a fat jar with dependencies: `mvn clean compile assembly:single`
 
