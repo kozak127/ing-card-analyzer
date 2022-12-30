@@ -57,10 +57,10 @@ class DocReader {
     private void parsePage(PDFTextStripperByArea stripper, Map<String, BigDecimal> totals, PDPage page) throws IOException {
         int areaCount = stripper.getRegions().size() - 1;
         stripper.extractRegions(page);
-        for (int i = 0; i < areaCount; i = i + 2) {
+        for (int i = 0; i < areaCount; i = i + 2) { // WARNING: THIS IS NOT YOUR USUAL LOOP -> IT ITERATES i+2
             System.out.println("Parsing regions: " + i + ";" + i + 1);
             String recipient = parseRecipient(stripper, i);
-            String transactionStr = parseTransactionString(stripper, i + 1);
+            String transactionStr = parseTransactionString(stripper, i + 1); // THIS IS WHY
 
             Optional<BigDecimal> transactionValue = convertTransactionValue(recipient, transactionStr);
             if (transactionValue.isEmpty()) continue;

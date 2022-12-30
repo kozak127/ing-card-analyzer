@@ -27,7 +27,7 @@ public class App {
             DocReader docReader = new DocReader();
             Map<String, BigDecimal> totals = docReader.parseDoc(pages, prop);
 
-            // print results
+            // sort & print results
             System.out.println("TOTAL:");
             totals.entrySet()
                     .stream()
