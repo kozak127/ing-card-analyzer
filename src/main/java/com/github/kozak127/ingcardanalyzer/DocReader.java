@@ -10,10 +10,10 @@ import java.util.*;
 
 class DocReader {
 
-    public Map<String, BigDecimal> parseDoc(List<PDPage> pages, Properties properties) throws IOException {
-        List<Rectangle2D> areaList = createAreaList(properties);
+    public Map<String, BigDecimal> parseDoc(List<PDPage> pages, Properties summaryProperties, Properties groupProperties) throws IOException {
+        List<Rectangle2D> areaList = createAreaList(summaryProperties);
         PDFTextStripperByArea stripper = createStripper(areaList);
-        return parsePages(stripper, pages);
+        return parsePages(stripper, pages, groupProperties);
     }
 
     private List<Rectangle2D> createAreaList(Properties properties) {
@@ -44,22 +44,22 @@ class DocReader {
         return stripper;
     }
 
-    private Map<String, BigDecimal> parsePages(PDFTextStripperByArea stripper, List<PDPage> pages) throws IOException {
+    private Map<String, BigDecimal> parsePages(PDFTextStripperByArea stripper, List<PDPage> pages, Properties groupProperties) throws IOException {
         Map<String, BigDecimal> totals = new HashMap<>();
 
         for (int i = 0; i < pages.size(); i++) {
             System.out.println("Parsing page " + i);
-            parsePage(stripper, totals, pages.get(i));
+            parsePage(stripper, totals, pages.get(i), groupProperties);
         }
         return totals;
     }
 
-    private void parsePage(PDFTextStripperByArea stripper, Map<String, BigDecimal> totals, PDPage page) throws IOException {
+    private void parsePage(PDFTextStripperByArea stripper, Map<String, BigDecimal> totals, PDPage page, Properties groupProperties) throws IOException {
         int areaCount = stripper.getRegions().size() - 1;
         stripper.extractRegions(page);
         for (int i = 0; i < areaCount; i = i + 2) { // WARNING: THIS IS NOT YOUR USUAL LOOP -> IT ITERATES i+2
             System.out.println("Parsing regions: " + i + ";" + i + 1);
-            String recipient = parseRecipient(stripper, i);
+            String recipient = parseRecipient(stripper, i, groupProperties);
             String transactionStr = parseTransactionString(stripper, i + 1); // THIS IS WHY
 
             Optional<BigDecimal> transactionValue = convertTransactionValue(recipient, transactionStr);
@@ -71,11 +71,16 @@ class DocReader {
         }
     }
 
-    private String parseRecipient(PDFTextStripperByArea stripper, int i) {
+    private String parseRecipient(PDFTextStripperByArea stripper, int i, Properties groupProperties) {
         String recipient = stripper.getTextForRegion(String.valueOf(i));
         recipient = recipient.trim();
         recipient = recipient.replace("\n", " ");
         recipient = recipient.replace("\r", "");
+        for (Map.Entry<Object, Object> entry : groupProperties.entrySet()) {
+            String key = String.valueOf(entry.getKey());
+            String value = String.valueOf(entry.getValue());
+            if (recipient.matches(value)) recipient = key;
+        }
         return recipient;
     }
 
